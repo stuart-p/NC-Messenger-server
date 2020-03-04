@@ -8,6 +8,7 @@ app.use(indexRouter);
 
 const server = http.createServer(app);
 const io = socketIo(server);
+const onlineUserArray = [];
 
 io.on("connection", socket => {
   io.emit("connected", "somebody connected to the chat...");
@@ -19,7 +20,9 @@ io.on("connection", socket => {
     io.emit("chat message", msg);
   });
   socket.on("userConnected", username => {
-    io.emit("connectionBroadcast", username);
+    onlineUserArray.push(username);
+    io.emit("connectionBroadcast", `${username} joined the chat`);
+    io.emit("onlineUserBroadcast", onlineUserArray);
   });
 });
 
