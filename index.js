@@ -17,7 +17,7 @@ io.on("connection", socket => {
     socket.broadcast.emit("chat message", `${username} left the chat`);
   });
   socket.on("chat message", data => {
-    socket.emit("chat message", data);
+    io.emit("chat message", data);
   });
   socket.on("userConnected", username => {
     if (onlineUserArray.indexOf(username) >= 0) {
