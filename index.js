@@ -8,16 +8,13 @@ app.use(indexRouter);
 
 const server = http.createServer(app);
 const io = socketIo(server);
-const onlineUserArray = [];
+const onlineUserArray = ["jessJelly"];
 
 io.on("connection", socket => {
-  io.emit("connected", "somebody connected to the chat...");
-
-  socket.on("disconnect", () => {
-    console.log("client disconnected");
-  });
-  socket.on("chat message", msg => {
-    io.emit("chat message", msg);
+  socket.on("disconnect", () => {});
+  socket.on("chat message", data => {
+    socket.broadcast.emit("chat message", data);
+    io.to(socket.id).emit("message validation", true);
   });
   socket.on("userConnected", username => {
     onlineUserArray.push(username);
