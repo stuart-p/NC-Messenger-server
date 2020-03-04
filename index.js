@@ -8,18 +8,25 @@ app.use(indexRouter);
 
 const server = http.createServer(app);
 const io = socketIo(server);
+const onlineUserArray = ["jessJelly"];
 
 io.on("connection", socket => {
-  io.emit("connected", "somebody connected to the chat...");
-
-  socket.on("disconnect", () => {
-    console.log("client disconnected");
+  socket.on("disconnect", username => {
+    onlineUserArray.splice(onlineUserArray.indexOf(username), 1);
+    socket.broadcast.emit("onlineUserBroadcast", onlineUserArray);
+    socket.broadcast.emit("chat message", `${username} left the chat`);
   });
-  socket.on("chat message", msg => {
-    io.emit("chat message", msg);
+  socket.on("chat message", data => {
+    socket.emit("chat message", data);
   });
   socket.on("userConnected", username => {
-    io.emit("connectionBroadcast", username);
+    if (onlineUserArray.indexOf(username) >= 0) {
+      io.to(socket.id).emit("username already exists", true);
+    } else {
+      onlineUserArray.push(username);
+      io.emit("connectionBroadcast", `${username} joined the chat`);
+      io.emit("onlineUserBroadcast", onlineUserArray);
+    }
   });
 });
 
