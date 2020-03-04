@@ -11,15 +11,23 @@ const io = socketIo(server);
 const onlineUserArray = ["jessJelly"];
 
 io.on("connection", socket => {
-  socket.on("disconnect", () => {});
+  socket.on("disconnect", username => {
+    onlineUserArray.splice(onlineUserArray.indexOf(username), 1);
+    socket.broadcast.emit("onlineUserBroadcast", onlineUserArray);
+    socket.broadcast.emit("chat message", `${username} left the chat`);
+  });
   socket.on("chat message", data => {
     socket.broadcast.emit("chat message", data);
     io.to(socket.id).emit("message validation", true);
   });
   socket.on("userConnected", username => {
-    onlineUserArray.push(username);
-    io.emit("connectionBroadcast", `${username} joined the chat`);
-    io.emit("onlineUserBroadcast", onlineUserArray);
+    if (onlineUserArray.indexOf(username) >= 0) {
+      io.to(socket.id).emit("username already exists", true);
+    } else {
+      onlineUserArray.push(username);
+      io.emit("connectionBroadcast", `${username} joined the chat`);
+      io.emit("onlineUserBroadcast", onlineUserArray);
+    }
   });
 });
 
